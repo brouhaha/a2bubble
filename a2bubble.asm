@@ -5,6 +5,28 @@
 ; Cross-assemble with Macro Assembler AS:
 ;   http://john.ccac.rwth-aachen.de:8000/as/
 
+fillto	macro	endaddr,value,{noexpand}
+	ifnb	value
+v	set	value
+	else
+v	set	$00
+	endif
+	while	*<endaddr
+	if	(endaddr-*)>1024
+	fcb	[1024] v
+	else
+	fcb	[endaddr-*] v
+	endif
+	endm
+	endm
+
+fcstrm	macro	s
+	irpc	c,s
+	fcb	'c'|$80
+	endm
+	endm
+
+
 ; ProDOS disk drivers are allowed to use zero page locations
 ; 00-01, 3a-46
 
@@ -187,15 +209,12 @@ prodos_entry_x:
 	jmp	prodos_entry_xx
 
 
-	fcb	$c3,$cf,$d0,$d2,$ae,$a0,$c8,$c5,$cc,$c9,$d8	; "COPR. HELIX"
-	fcb	$a0,$cc,$c1,$c2,$cf,$d2,$c1,$d4,$cf,$d2,$c9,$c5,$d3	; " LABORATORIES"
-	fcb	$a0,$c9,$ce,$c3,$ae,$a0,$b1,$b9,$b8,$b4	; " INC. 1984"
-
-; unused
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff
-	fcb	$ff,$ff,$ff,$ff
+	fcstrm	"COPR. HELIX LABORATORIES INC. 1984"
 
 
+	fillto	$c65c,$ff
+	
+; DOS 3.3 boot sector reenters ROM bootstrap here
 boot:	lda	c8xx_rom_disable
 	jsr	click
 	ldx	Z2b
@@ -285,11 +304,11 @@ msg_io_error:	fcb	$87,$8d,$8a	; bell, return, linefeed
 	fcb	$be,$c9,$cf,$a0,$c5,$d2,$d2,$cf,$d2	; >IO ERROR
 msg_len_io_error	equ	*-msg_io_error
 
-; unused
-	fcb	$ff,$ff,$ff
+	fillto	$c6fb,$ff
 
 ; CnFB would be SmartPort ID Type Byte, SmartPort Interface was supported,
 ; but it's not.
+	fcb	$ff
 
 ; must be at CnFC here!
 	fdb	$0100	; total number of 512-byte blocks on device
@@ -324,8 +343,9 @@ msg_len_io_error	equ	*-msg_io_error
 prodos_entry_xx:
 	jmp	prodos_entry
 
-; reserved for future expansion
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff
+
+; reserved room for a few additional jumps for future expansion
+	fillto	$c830, $ff
 
 
 ; Bubble RWTS, called by the patch to DOS 3.3
@@ -1336,21 +1356,6 @@ Lce99:	lda	Z3d
 	cmp	D0800
 Lce9e:	rts
 
+	fillto	$cef1,$ff
 
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	fcb	$ff,$ff
-
-
-	fcb	$b1,$b1,$af,$b2,$b4,$af
-	fcb	$b8,$b4		; "84"
-	fcb	$a0,$d6,$c5,$d2,$b3,$b4,$b0	; " VER340"
-
+	fcstrm	"11/24/84 VER340"
