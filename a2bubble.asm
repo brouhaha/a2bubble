@@ -8,135 +8,136 @@
 ; ProDOS disk drivers are allowed to use zero page locations
 ; 00-01, 3a-46
 
-Z18	.equ	$18
-Z26	.equ	$26
-Z27	.equ	$27
-Z2a	.equ	$2a
+Z18	equ	$18
+Z26	equ	$26
+Z27	equ	$27
+Z2a	equ	$2a
 
-Z2b	.equ	$2b	; DOS: slot * 16
+Z2b	equ	$2b	; DOS: slot * 16
 
-Z2c	.equ	$2c	; DOS: pointer to BMC data register (two bytes)
+Z2c	equ	$2c	; DOS: pointer to BMC data register (two bytes)
 
-Z2e	.equ	$2e
-Z2f	.equ	$2f
-Z35	.equ	$35
+Z2e	equ	$2e
+Z2f	equ	$2f
+Z35	equ	$35
 
-cswl	.equ	$36	; monitor: character output vector (two bytes)
+cswl	equ	$36	; monitor: character output vector (two bytes)
 
-Z38	.equ	$38
-Z3a	.equ	$3a
-Z3b	.equ	$3b
+Z38	equ	$38
+Z3a	equ	$3a
+Z3b	equ	$3b
 
-Z3c	.equ	$3c	; ProDOS: pointer to BMC data register (two bytes)
-Z3d	.equ	$3d
+Z3c	equ	$3c	; ProDOS: pointer to BMC data register (two bytes)
+Z3d	equ	$3d
 
-Z3e	.equ	$3e	; ProDOS: slot * 16
+Z3e	equ	$3e	; ProDOS: slot * 16
 
-Z3f	.equ	$3f
-Z41	.equ	$41
+Z3f	equ	$3f
+Z41	equ	$41
 
-prodos_cmd	.equ	$42
-prodos_unit	.equ	$43
-prodos_buf	.equ	$44
-prodos_block	.equ	$46	; two bytes
+prodos_cmd	equ	$42
+prodos_unit	equ	$43
+prodos_buf	equ	$44
+prodos_block	equ	$46	; two bytes
 
-dos_retry_count	.equ	$44
+dos_retry_count	equ	$47
 
-Z48	.equ	$48
-Zbd	.equ	$bd
-Zbe	.equ	$be
-Zbf	.equ	$bf
-Zc3	.equ	$c3
-Zc5	.equ	$c5
-Zcb	.equ	$cb
+Z48	equ	$48
+Zbd	equ	$bd
+Zbe	equ	$be
+Zbf	equ	$bf
+Zc3	equ	$c3
+Zc5	equ	$c5
+Zcb	equ	$cb
 
-stack	.equ	$0100
+stack	equ	$0100
 
-D03a1	.equ	$03a1
-D03a2	.equ	$03a2
-D03a4	.equ	$03a4
-D03a8	.equ	$03a8
-D03a9	.equ	$03a9
-D03ac	.equ	$03ac
-D03ad	.equ	$03ad
-D03af	.equ	$03af
+D03a1	equ	$03a1
+D03a2	equ	$03a2
+D03a4	equ	$03a4
+D03a8	equ	$03a8
+D03a9	equ	$03a9
+D03ac	equ	$03ac
+D03ad	equ	$03ad
+D03af	equ	$03af
 
 ; Apple DOS: locate file manager input parameter list
-S03dc	.equ	$03dc
-D03e0	.equ	$03e0
-D03e1	.equ	$03e1
-D03e2	.equ	$03e2
+S03dc	equ	$03dc
+D03e0	equ	$03e0
+D03e1	equ	$03e1
+D03e2	equ	$03e2
 
 ; Apple DOS: locate input parameter list for RWTS
-D03e3	.equ	$03e3
-D03e4	.equ	$03e4
-D03e5	.equ	$03e5
-D03e6	.equ	$03e6
-D03e7	.equ	$03e7
-D03e8	.equ	$03e8
-D03e9	.equ	$03e9
+D03e3	equ	$03e3
+D03e4	equ	$03e4
+D03e5	equ	$03e5
+D03e6	equ	$03e6
+D03e7	equ	$03e7
+D03e8	equ	$03e8
+D03e9	equ	$03e9
 
 ; Apple DOS: JMP to subroutine to reconnect DOS keyboard and screen intercepts
-D03ea	.equ	$03ea
-D03eb	.equ	$03eb
+D03ea	equ	$03ea
+D03eb	equ	$03eb
 
-D05f8	.equ	$05f8
+D05f8	equ	$05f8
 
-D0800	.equ	$0800
-L0801	.equ	$0801
+D0800	equ	$0800
+L0801	equ	$0801
 
-Sbfd0	.equ	$bfd0	; ProDOS irqxit?
+Sbfd0	equ	$bfd0	; ProDOS irqxit?
 
 
 ; Apple II hardware
-spkr			.equ	$c030
-c8xx_rom_disable	.equ	$cfff
+spkr			equ	$c030
+c8xx_rom_disable	equ	$cfff
 
 ; Applesoft entry point
-Sd382	.equ	$d382
+Sd382	equ	$d382
 
 
 ; Apple II BASIC entry points (Integer or Applesoft)
-basic_cold_start	.equ	$e000
+basic_cold_start	equ	$e000
 
 ; Apple II monitor ROM entry points
-Dfb59	.equ	$fb59
-cout	.equ	$fded
-cout1	.equ	$fdf0	; output char to screen
-monrts	.equ	$ff58	; guaranteed to be an RTS instruction
+Dfb59	equ	$fb59
+cout	equ	$fded
+cout1	equ	$fdf0	; output char to screen
+monrts	equ	$ff58	; guaranteed to be an RTS instruction
 
 
 ; card-specific hardware
 ; Intel 7220-1 Bubble Memory Controller hardware registers
-bmc_data   	.equ	$c080	; but data reg only addressed indirectly
-bmc_cmd		.equ	$c081
-bmc_status	.equ	$c081
+bmc_data   	equ	$c080	; but data reg only addressed indirectly
+bmc_cmd		equ	$c081
+bmc_status	equ	$c081
 
 ; unknown card hardware
-Dc088	.equ	$c088
-Dc089	.equ	$c089
-Dc08c	.equ	$c08c
-Dc08e	.equ	$c08e
+Dc088	equ	$c088
+Dc089	equ	$c089
+Dc08c	equ	$c08c
+Dc08e	equ	$c08e
 
 
 ; BMC internal register addresses
 ; These registers are accessed by writing the register address to the
 ; bmc_cmd register, then reading/writing the bmc_data register
-bmc_reg_fifo		.equ	$00	; RW, doesn't advance
-bmc_reg_utility		.equ	$0a	; RW
-bmc_reg_block_length	.equ	$0b	; two bytes, little-endian, WO
-bmc_reg_enable		.equ	$0d	; WO
-bmc_reg_address		.equ	$0e	; two bytes, RW
+bmc_reg_fifo		equ	$00	; RW, doesn't advance
+bmc_reg_utility		equ	$0a	; RW
+bmc_reg_block_length	equ	$0b	; two bytes, little-endian, WO
+bmc_reg_enable		equ	$0d	; WO
+bmc_reg_address		equ	$0e	; two bytes, RW
 
 ; BMC commands
-bmc_cmd_initialize	.equ	$11
-bmc_cmd_read_data	.equ	$12
-bmc_cmd_write_data	.equ	$13
-bmc_cmd_abort		.equ	$19
-bmc_cmd_reset_fifo	.equ	$1d
+bmc_cmd_initialize	equ	$11
+bmc_cmd_read_data	equ	$12
+bmc_cmd_write_data	equ	$13
+bmc_cmd_abort		equ	$19
+bmc_cmd_reset_fifo	equ	$1d
 
 
-	.org	$c600
+	org	$cf00
+	phase	$c600
 
 ; Bytes at Cn0{1,3,5,7} = $20, $00, $03, $3C identify card as bootable by
 ;   original Autostart ROM monitor. Later models only check the first
@@ -186,17 +187,17 @@ prodos_entry_x:
 	jmp	prodos_entry_xx
 
 
-	.byte	$c3,$cf,$d0,$d2,$ae,$a0,$c8,$c5,$cc,$c9,$d8	; "COPR. HELIX"
-	.byte	$a0,$cc,$c1,$c2,$cf,$d2,$c1,$d4,$cf,$d2,$c9,$c5,$d3	; " LABORATORIES"
-	.byte	$a0,$c9,$ce,$c3,$ae,$a0,$b1,$b9,$b8,$b4	; " INC. 1984"
+	fcb	$c3,$cf,$d0,$d2,$ae,$a0,$c8,$c5,$cc,$c9,$d8	; "COPR. HELIX"
+	fcb	$a0,$cc,$c1,$c2,$cf,$d2,$c1,$d4,$cf,$d2,$c9,$c5,$d3	; " LABORATORIES"
+	fcb	$a0,$c9,$ce,$c3,$ae,$a0,$b1,$b9,$b8,$b4	; " INC. 1984"
 
 ; unused
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff
-	.byte	$ff,$ff,$ff,$ff
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff
+	fcb	$ff,$ff,$ff,$ff
 
 
 boot:	lda	c8xx_rom_disable
-	jsr	Scabe
+	jsr	click
 	ldx	Z2b
 	lda	#$00
 	sta	Z2f
@@ -235,16 +236,16 @@ Lc697:	clc
 	sta	Z2e
 
 	lda	c8xx_rom_disable
-	jsr	Sc92a
+	jsr	initchk
 	bcc	Lc6b3
 
 	lda	#$04
 	sta	dos_retry_count
 
-Lc6ae:	jsr	bmc_abort
+Lc6ae:	jsr	initial
 	bcs	Lc6cb
 
-Lc6b3:	jsr	dos_read_sector
+Lc6b3:	jsr	rdbub
 	bcs	Lc6cb
 
 	lda	spkr		; click speaker
@@ -263,12 +264,12 @@ Lc6cb:	dec	dos_retry_count
 
 ; output IO error message to screen
 
-	lda	#cout1 & 0xff	; disconnect any alternate character output
+	lda	#(cout1 & $ff)	; disconnect any alternate character output
 	sta	cswl
-	lda	#cout1 >> 8
+	lda	#(cout1 >> 8)
 	sta	cswl+1
 
-	lda	#msg_io_error & 0xff
+	lda	#msg_io_error & $ff
 	sta	Z3e
 
 	ldy	#$00
@@ -280,52 +281,56 @@ msg_loop:
 	bne	msg_loop
 	jmp	basic_cold_start
 
-msg_io_error:	.byte	$87,$8d,$8a	; bell, return, linefeed
-	.byte	$be,$c9,$cf,$a0,$c5,$d2,$d2,$cf,$d2	; >IO ERROR
-msg_len_io_error	equ	$-msg_io_error
+msg_io_error:	fcb	$87,$8d,$8a	; bell, return, linefeed
+	fcb	$be,$c9,$cf,$a0,$c5,$d2,$d2,$cf,$d2	; >IO ERROR
+msg_len_io_error	equ	*-msg_io_error
 
 ; unused
-	.byte	$ff,$ff,$ff
+	fcb	$ff,$ff,$ff
 
 ; CnFB would be SmartPort ID Type Byte, SmartPort Interface was supported,
 ; but it's not.
 
 ; must be at CnFC here!
-	.word	$0100	; total number of 512-byte blocks on device
-	.byte	$4f	; ProDOS block device STATUS byte
+	fdb	$0100	; total number of 512-byte blocks on device
+	fcb	$4f	; ProDOS block device STATUS byte
 			; not removable
 			; interruptable
 			; 1 volume
 			; supports formatting, write, read, status
-	.byte	prodos_entry_x & 0xff
+	fcb	prodos_entry_x & $ff
+
+	dephase
 
 
+	org	$c800
 
-	.org	$c800
+; Jump table, first 12 entries described in Appendix E of manual
+	jmp	bubrwts
+	jmp	initchk
+	jmp	cmdwait
+	jmp	ldrdrac
+	jmp	ldwrrac
+	jmp	initial
+	jmp	wptest
+	jmp	rdbub
+	jmp	wrbub
+	jmp	inbitmap
+	jmp	click
+	jmp	bubpasc
 
-; Jump table, mostly not used by firmware,
-; possibly for use from diagnostics and utilities.
-	jmp	Lc830
-	jmp	Sc92a
-	jmp	Sc933
-	jmp	setup_dos_read
-	jmp	setup_dos_nonread
-	jmp	bmc_abort
-	jmp	Sca19
-	jmp	dos_read_sector
-	jmp	Sca54
-	jmp	Sca86
-	jmp	Scabe
-	jmp	Lcaf8
 	jmp	Lcbd2
 
 prodos_entry_xx:
 	jmp	prodos_entry
 
 ; reserved for future expansion
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff
 
-Lc830:	pla
+
+; Bubble RWTS, called by the patch to DOS 3.3
+bubrwts:
+	pla
 	sta	Z3c
 	pla
 	sta	Z3d
@@ -354,7 +359,7 @@ Lc856:	cmp	Dc08c,X
 	pla
 	tax
 Lc860:	lda	Dc089,X
-	jsr	Scabe
+	jsr	click
 	ldy	#$08
 	lda	(Z48),Y
 	sta	Z26
@@ -417,26 +422,26 @@ Lc8c7:	clc
 	asl
 	rol	Z2f
 	sta	Z2e
-	jsr	Sc92a
+	jsr	initchk
 	bcc	Lc8dc
-Lc8d7:	jsr	bmc_abort
+Lc8d7:	jsr	initial
 	bcs	Lc8fd
 Lc8dc:	ldy	#$0c
 	lda	(Z48),Y
 	beq	Lc908
 	lsr
 	bcc	Lc8eb
-	jsr	dos_read_sector
+	jsr	rdbub
 	jmp	Lc8fd
 
 Lc8eb:	lsr
 	bcc	Lc908
-	jsr	Sca19
+	jsr	wptest
 	bcc	Lc8f7
 	lda	#$10
 	bne	Lc920
-Lc8f7:	jsr	Sca86
-	jsr	Sca54
+Lc8f7:	jsr	inbitmap
+	jsr	wrbub
 Lc8fd:	bcc	Lc908
 	pla
 	sec
@@ -450,13 +455,13 @@ Lc908:	ldy	#$06
 	iny
 	lda	(Z48),Y
 	sta	Z3d
-	jsr	Scabe
+	jsr	click
 	lda	#$00
 	beq	Lc91e
 Lc91a:	lda	#$40
 	bne	Lc920
 Lc91e:	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lc920:	sec
 	ldy	#$0d
 	sta	(Z48),Y
@@ -464,14 +469,18 @@ Lc920:	sec
 	pla
 	rts
 
-Sc92a:	lda	#bmc_cmd_reset_fifo
+
+; check whether 7220 BMC needs initializing
+initchk:
+	lda	#bmc_cmd_reset_fifo
 	sta	bmc_cmd,X
-	jsr	Sc933
+	jsr	cmdwait
 	rts
 
 
 ; wait for BMC to go busy, then idle
-Sc933:	lda	#$00
+cmdwait:
+	lda	#$00
 	pha
 Lc936:	lda	bmc_status,X
 	bmi	Lc940
@@ -490,16 +499,18 @@ Lc940:	lda	bmc_status,X
 	bne	Lc940
 
 Lc94f:	sec
-	.byte	$24	; bit instr to skip clc
+	fcb	$24	; bit instr to skip clc
 Lc951:	clc
 	pla
 	rts
 
 
 ; send block length and address to BMC for read data command
+; with error correction
+; used for DOS
 ; (enables MFBTR, can't be used for commands other than read data)
 ; on entry, Y = number of 64-byte pages for block length
-setup_dos_read:
+ldrdrac:
 	lda	#bmc_reg_block_length
 	sta	bmc_cmd,X
 	ldx	#$00
@@ -524,10 +535,12 @@ setup_dos_read:
 	rts
 
 
-; send block length and address to BMC for commands other than read data
+; send block length and address to BMC for commands other than read data,
+; including write with error correction
+; used for DOS
 ; (disables MFBTR)
 ; on entry, Y = number of 64-byte pages for block length
-setup_dos_nonread:
+ldwrrac:
 	lda	#bmc_reg_block_length
 	sta	bmc_cmd,X
 	ldx	#$00
@@ -562,16 +575,16 @@ dos_setup_data_reg_ptr:
 	rts
 
 
-; tell BMC to abort, twice
-bmc_abort:
+; initialize: tell BMC to abort, twice
+initial:
 	lda	#bmc_cmd_abort
 	sta	bmc_cmd,X
-	jsr	Sc933
+	jsr	cmdwait
 	bcs	Lc9dc
 
 	lda	#bmc_cmd_abort
 	sta	bmc_cmd,X
-	jsr	Sc933
+	jsr	cmdwait
 	bcs	Lc9dc
 
 	lda	bmc_status,X
@@ -589,18 +602,18 @@ Lc9ba:	sbc	#$01
 
 	jsr	dos_setup_data_reg_ptr
 	ldy	#$04	; 4*64 = 256 byte block
-	jsr	setup_dos_nonread
+	jsr	ldwrrac
 
 	lda	#bmc_cmd_initialize
 	sta	bmc_cmd,X
-	jsr	Sc933
+	jsr	cmdwait
 	bcs	Lc9dc
 
 	lda	bmc_status,X
 	cmp	#$40
 	bne	Lc9dc
 	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lc9dc:	sec
 	rts
 
@@ -615,7 +628,7 @@ Lc9e1:	lda	bmc_status,X
 	pha
 	bne	Lc9e1
 	sec
-	.byte	$24	; bit instr to skip clc
+	fcb	$24	; bit instr to skip clc
 Lc9ef:	clc
 	pla
 	rts
@@ -643,24 +656,29 @@ Lc9f6:	lda	bmc_status,X
 	bne	Lc9f6
 Lca12:	pha
 Lca13:	sec
-	.byte	$24	; bit instr to skip clc
+	fcb	$24	; bit instr to skip clc
 Lca15:	clc
 	pla
 	pla
 	rts
 
-Sca19:	lda	Dc08c,X
+
+; test write-protect switch
+; returns carry set if write-protected, clear if not
+wptest:
+	lda	Dc08c,X
 	bpl	Lca20
 	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lca20:	sec
 	rts
 
 
-dos_read_sector:
+; Read one sector (256 bytes), used for DOS
+rdbub:
 	jsr	dos_setup_data_reg_ptr
 	ldy	#$04	; 4*64 = 256 byte block
-	jsr	setup_dos_read
+	jsr	ldrdrac
 	ldy	#$00
 
 	lda	#bmc_cmd_read_data
@@ -683,14 +701,15 @@ Lca47:	beq	Lca52
 	and	#$3c
 	bne	Lca52
 	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lca52:	sec
 	rts
 
 
-Sca54:	jsr	dos_setup_data_reg_ptr
+; Write one sector (256 bytes), used for DOS
+wrbub:	jsr	dos_setup_data_reg_ptr
 	ldy	#$04	; 4*64 = 256 byte block
-	jsr	setup_dos_nonread
+	jsr	ldwrrac
 	ldy	#$00
 
 	lda	#bmc_cmd_write_data
@@ -713,12 +732,18 @@ Lca79:	beq	Lca84
 	and	#$3c
 	bne	Lca84
 	clc
-	.byte	$24	; bit instr to skip clc
+	fcb	$24	; bit instr to skip clc
 Lca84:	sec
 	rts
 
 
-Sca86:	lda	Z2a
+; Change the DOS VTOC bitmap to protect tracks 3-5 to prevent
+; DOS from allocating those to files. Necessary when initializing
+; bubble as a bootable DOS disk, because tracks 0-2 (used for DOS)
+; and tracks 3-5 (used for files) map to the same portion of the
+; bubble device.
+inbitmap:
+	lda	Z2a
 	cmp	#$0e
 	bne	Lcabd
 	ldy	#$05
@@ -749,7 +774,8 @@ Lcab1:	sta	(Z26),Y
 Lcabd:	rts
 
 
-Scabe:	lda	Dc08c,X
+; toggle speaker if enabled by switch
+click:	lda	Dc08c,X
 	asl
 	bpl	Lcac7
 	lda	spkr
@@ -757,17 +783,19 @@ Lcac7:	rts
 
 
 ; interleave tables?
-Dcac8:	.byte	$00,$0d,$0b,$09,$07,$05,$03,$01
-	.byte	$0e,$0c,$0a,$08,$06,$04,$02,$0f
+Dcac8:	fcb	$00,$0d,$0b,$09,$07,$05,$03,$01
+	fcb	$0e,$0c,$0a,$08,$06,$04,$02,$0f
 
-Dcad8:	.byte	$0f,$08,$01,$09,$02,$0a,$03,$0b
-	.byte	$04,$0c,$05,$0d,$06,$0e,$07,$00
+Dcad8:	fcb	$0f,$08,$01,$09,$02,$0a,$03,$0b
+	fcb	$04,$0c,$05,$0d,$06,$0e,$07,$00
 
-Dcae8:	.byte	$00,$08,$01,$09,$02,$0a,$03,$0b
-	.byte	$04,$0c,$05,$0d,$06,$0e,$07,$0f
+Dcae8:	fcb	$00,$08,$01,$09,$02,$0a,$03,$0b
+	fcb	$04,$0c,$05,$0d,$06,$0e,$07,$0f
 
 
-Lcaf8:	lda	#$04
+; disk access from Apple Pascal 1.1 patch
+bubpasc:
+	lda	#$04
 	pha
 	ldx	D03a1
 	stx	Z2b
@@ -814,7 +842,7 @@ Lcb32:	clc
 	rol	Z2f
 	sta	Z2e
 Lcb4f:	jsr	Sbfd0
-	jsr	Scabe
+	jsr	click
 	lda	Zcb
 	sec
 	sbc	Zbd
@@ -839,22 +867,22 @@ Lcb7a:	sty	Z26
 	sta	Z27
 	sty	Z3e
 	sta	Z3f
-	jsr	Sc92a
+	jsr	initchk
 	bcc	Lcb8c
-Lcb87:	jsr	bmc_abort
+Lcb87:	jsr	initial
 	bcs	Lcba6
 Lcb8c:	lda	D03ac
 	cmp	#$02
 	bne	Lcba3
-	jsr	Sca19
+	jsr	wptest
 	bcc	Lcb9d
 	lda	#$10
 	jmp	Lcbc9
 
-Lcb9d:	jsr	Sca54
+Lcb9d:	jsr	wrbub
 	jmp	Lcba6
 
-Lcba3:	jsr	dos_read_sector
+Lcba3:	jsr	rdbub
 Lcba6:	bcc	Lcbb4
 	pla
 	sec
@@ -875,7 +903,7 @@ Lcbb4:	inc	Zcb
 	dec	Zc3
 	bne	Lcb4f
 	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lcbc9:	sec
 	sta	D03ad
 	lda	Dc088,X
@@ -905,7 +933,7 @@ Lcbf1:	cmp	Dc08c,X
 	pla
 	tax
 Lcbfb:	lda	Dc089,X
-	jsr	Scabe
+	jsr	click
 	stx	Z2b
 	lda	D03e4
 	sta	D03e5
@@ -952,9 +980,9 @@ Lcc4f:	clc
 	asl
 	rol	Z2f
 	sta	Z2e
-	jsr	Sc92a
+	jsr	initchk
 	bcc	Lcc64
-Lcc5f:	jsr	bmc_abort
+Lcc5f:	jsr	initial
 	bcs	Lcc88
 Lcc64:	lda	D03eb
 	beq	Lcc7c
@@ -965,14 +993,14 @@ Lcc64:	lda	D03eb
 	lda	#$40
 	jmp	Lcca0
 
-Lcc76:	jsr	dos_read_sector
+Lcc76:	jsr	rdbub
 	jmp	Lcc88
 
-Lcc7c:	jsr	Sca19
+Lcc7c:	jsr	wptest
 	bcc	Lcc85
 	lda	#$10
 	bne	Lcca0
-Lcc85:	jsr	Sca54
+Lcc85:	jsr	wrbub
 Lcc88:	bcc	Lcc93
 	pla
 	sec
@@ -980,13 +1008,13 @@ Lcc88:	bcc	Lcc93
 	pha
 	bne	Lcc5f
 	beq	Lcc9a
-Lcc93:	jsr	Scabe
+Lcc93:	jsr	click
 	lda	#$00
 	beq	Lcc9e
 Lcc9a:	lda	#$40	; 64 @
 	bne	Lcca0
 Lcc9e:	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lcca0:	sec
 	sta	D03ea
 	lda	Dc088,X
@@ -994,8 +1022,8 @@ Lcca0:	sec
 	rts
 
 ; interleave table?
-Dcca9:	.byte	$00,$02,$04,$06,$08,$0a,$0c,$0e
-	.byte	$01,$03,$05,$07,$09,$0b,$0d,$0f
+Dcca9:	fcb	$00,$02,$04,$06,$08,$0a,$0c,$0e
+	fcb	$01,$03,$05,$07,$09,$0b,$0d,$0f
 
 prodos_entry:
 	cld
@@ -1035,7 +1063,7 @@ Lcce6:	pla
 	beq	Lccf2
 
 	sec
-	.byte	$24	; bit instr to skip clc
+	fcb	$24	; bit instr to skip clc
 Lccf2:	clc
 	rts
 
@@ -1051,8 +1079,8 @@ Sccf4:	lda	#$00
 	pha
 	ldx	Z3e
 	lda	Dc089,X
-	jsr	Scabe
-	jsr	Sc92a
+	jsr	click
+	jsr	initchk
 	bcc	Lcd1b
 Lcd16:	jsr	Scdcd
 	bcs	Lcd45
@@ -1067,7 +1095,7 @@ Lcd1b:	lda	prodos_cmd
 	bcs	Lcd37		; read request
 
 ; write request here
-	jsr	Sca19
+	jsr	wptest
 	bcc	Lcd31
 	lda	#$2b
 	sta	Z3f
@@ -1083,7 +1111,7 @@ Lcd37:	lsr
 Lcd40:	sec
 	jmp	Lcd45
 
-	.byte	$18
+	fcb	$18
 
 Lcd45:	bcc	Lcd52
 	pla
@@ -1094,7 +1122,7 @@ Lcd45:	bcc	Lcd52
 	lda	#$27
 	sta	Z3f
 Lcd52:	lda	Dc088,X
-	jsr	Scabe
+	jsr	click
 	ldx	#$00
 	ldy	#$01
 	pla
@@ -1186,12 +1214,12 @@ Scdcd:	sei
 
 	lda	#bmc_cmd_abort
 	sta	bmc_cmd,X
-	jsr	Sc933
+	jsr	cmdwait
 	bcs	Lce11
 
 	lda	#bmc_cmd_abort
 	sta	bmc_cmd,X
-	jsr	Sc933
+	jsr	cmdwait
 
 	cli
 
@@ -1212,7 +1240,7 @@ Lcdef:	sbc	#$01
 
 	lda	#bmc_cmd_initialize
 	sta	bmc_cmd,X
-	jsr	Sc933
+	jsr	cmdwait
 
 	cli
 	bcs	Lce11
@@ -1220,7 +1248,7 @@ Lcdef:	sbc	#$01
 	cmp	#$40
 	bne	Lce11
 	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lce11:	sec
 	rts
 
@@ -1252,7 +1280,7 @@ Lce3b:	beq	Lce46
 	and	#$3c
 	bne	Lce46
 	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lce46:	sec
 	cli
 	rts
@@ -1285,13 +1313,13 @@ Lce71:	beq	Lce7c
 	and	#$3c
 	bne	Lce7c
 	clc
-	.byte	$24	; bit instr to skip sec
+	fcb	$24	; bit instr to skip sec
 Lce7c:	sec
 	cli
 	rts
 
 
-Dce7f:	.byte	$01,$38,$b0,$03            	; ".8.."
+Dce7f:	fcb	$01,$38,$b0,$03            	; ".8.."
 
 Sce83:	cmp	#$01
 	bne	Lce99
@@ -1309,20 +1337,20 @@ Lce99:	lda	Z3d
 Lce9e:	rts
 
 
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
-	.byte	$ff,$ff
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff	; "........"
+	fcb	$ff,$ff
 
 
-	.byte	$b1,$b1,$af,$b2,$b4,$af
-	.byte	$b8,$b4		; "84"
-	.byte	$a0,$d6,$c5,$d2,$b3,$b4,$b0	; " VER340"
+	fcb	$b1,$b1,$af,$b2,$b4,$af
+	fcb	$b8,$b4		; "84"
+	fcb	$a0,$d6,$c5,$d2,$b3,$b4,$b0	; " VER340"
 
