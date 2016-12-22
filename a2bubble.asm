@@ -33,9 +33,10 @@ fcstrm	macro	s
 Z18	equ	$18
 Z26	equ	$26
 Z27	equ	$27
-Z2a	equ	$2a
 
-Z2b	equ	$2b	; DOS: slot * 16
+bubble_track	equ	$2a
+
+Z2b	equ	$2b
 
 Z2c	equ	$2c	; DOS: pointer to BMC data register (two bytes)
 
@@ -52,19 +53,51 @@ Z3b	equ	$3b
 Z3c	equ	$3c	; ProDOS: pointer to BMC data register (two bytes)
 Z3d	equ	$3d
 
-Z3e	equ	$3e	; ProDOS: slot * 16
+Z3e	equ	$3e
 
 Z3f	equ	$3f
 Z41	equ	$41
 
+
+; boot ROM variables
+boot_retry_count	equ	$47
+
+
+; DOS variables
+dos_slot_16	equ	$2b	; slot * 16
+
+rwts_dct	equ	$3c
+rwts_iopb	equ	$48
+
+; DOS RWTS IOPB offsets
+rwts_iopb_table_type	equ	$00
+rwts_iopb_slot_num_16	equ	$01	; slot number times 16
+rwts_iopb_drive_num	equ	$02
+rwts_iopb_volume_num	equ	$03
+rwts_iopb_track		equ	$04
+rwts_iopb_sector	equ	$05
+rwts_iopb_dct_ptr	equ	$06
+rwts_iopb_buf_ptr	equ	$08
+; byte at offset 0a not used
+rwts_iopb_byte_count	equ	$0b
+rwts_iopb_command	equ	$0c
+rwts_iopb_return_code	equ	$0d
+rwts_iopb_prev_volume	equ	$0e
+rwts_iopb_prev_slot_16	equ	$0f
+rwts_iopb_prev_drive	equ	$10
+
+
+; prodos variables
+prodos_buf_ptr	equ	$3a
+prodos_bmc_ptr	equ	$3c	; pointer to BMC data register (two bytes)
+prodos_slot_16	equ	$3e	; slot * 16
 prodos_cmd	equ	$42
 prodos_unit	equ	$43
 prodos_buf	equ	$44
 prodos_block	equ	$46	; two bytes
 
-dos_retry_count	equ	$47
 
-Z48	equ	$48
+
 Zbd	equ	$bd
 Zbe	equ	$be
 Zbf	equ	$bf
@@ -83,8 +116,9 @@ D03ac	equ	$03ac
 D03ad	equ	$03ad
 D03af	equ	$03af
 
-; Apple DOS: locate file manager input parameter list
-S03dc	equ	$03dc
+; Apple DOS
+get_dos_fm_parm	equ	$03dc	; locate file manager input parameter list
+
 D03e0	equ	$03e0
 D03e1	equ	$03e1
 D03e2	equ	$03e2
@@ -122,10 +156,13 @@ Sd382	equ	$d382
 basic_cold_start	equ	$e000
 
 ; Apple II monitor ROM entry points
-Dfb59	equ	$fb59
 cout	equ	$fded
 cout1	equ	$fdf0	; output char to screen
 monrts	equ	$ff58	; guaranteed to be an RTS instruction
+
+; ProDOS variable
+prodos_prev_unit	equ	$fb59	; in Language Card RAM
+	; NOTE: won't work right with Prodos on 48K Apple II or II+
 
 
 ; card-specific hardware
@@ -135,8 +172,8 @@ bmc_cmd		equ	$c081
 bmc_status	equ	$c081
 
 ; unknown card hardware
-Dc088	equ	$c088
-Dc089	equ	$c089
+led_off	equ	$c088
+led_on	equ	$c089
 Dc08c	equ	$c08c
 Dc08e	equ	$c08e
 
@@ -184,17 +221,17 @@ bmc_cmd_reset_fifo	equ	$1d
 ; get the slot number we're running in
 	jsr	monrts
 	tsx
-	lda	stack,X
+	lda	stack,x
 	sta	Z3f		; $Cn for slot n
 	
 	asl
 	asl
 	asl
 	asl
-	sta	Z2b		; $n0, slot number * 16
+	sta	dos_slot_16	; $n0, slot number * 16
 
 	tax
-	lda	Dc089,X
+	lda	led_on,x
 	lda	#$00
 	sta	Z26
 	sta	Z3d
@@ -217,7 +254,7 @@ prodos_entry_x:
 ; DOS 3.3 boot sector reenters ROM bootstrap here
 boot:	lda	c8xx_rom_disable
 	jsr	click
-	ldx	Z2b
+	ldx	dos_slot_16
 	lda	#$00
 	sta	Z2f
 	lda	Z41
@@ -236,10 +273,10 @@ Lc671:	sta	Z41
 	ldy	Z41
 	bne	Lc687
 	ldy	Z3d
-	lda	Dcae8,Y
+	lda	Dcae8,y
 	bpl	Lc697
 Lc687:	ldy	Z3d
-	lda	Dcad8,Y
+	lda	Dcad8,y
 	ldy	Z41
 	cpy	#$0e
 	bne	Lc697
@@ -259,7 +296,7 @@ Lc697:	clc
 	bcc	Lc6b3
 
 	lda	#$04
-	sta	dos_retry_count
+	sta	boot_retry_count
 
 Lc6ae:	jsr	initial
 	bcs	Lc6cb
@@ -272,14 +309,14 @@ Lc6b3:	jsr	rdbub
 	inc	Z3d
 	lda	Z3d
 	jsr	Sce83
-	ldx	Z2b
+	ldx	dos_slot_16
 	bcc	boot
 	jmp	L0801		; proceed to next stage of boot sequence
 
-Lc6cb:	dec	dos_retry_count
+Lc6cb:	dec	boot_retry_count
 	bne	Lc6ae
 
-	lda	Dc088,X
+	lda	led_off,x
 
 ; output IO error message to screen
 
@@ -293,7 +330,7 @@ Lc6cb:	dec	dos_retry_count
 
 	ldy	#$00
 msg_loop:
-	lda	(Z3e),Y
+	lda	(Z3e),y
 	jsr	cout
 	iny
 	cpy	#msg_len_io_error
@@ -338,7 +375,7 @@ msg_len_io_error	equ	*-msg_io_error
 	jmp	click
 	jmp	bubpasc
 
-	jmp	Lcbd2
+	jmp	Lcbd2		; XXX may be CP/M entry point
 
 prodos_entry_xx:
 	jmp	prodos_entry
@@ -350,64 +387,77 @@ prodos_entry_xx:
 
 ; Bubble RWTS, called by the patch to DOS 3.3
 bubrwts:
+	pla			; discard return address for DOS patch
+	sta	rwts_dct
 	pla
-	sta	Z3c
-	pla
-	sta	Z3d
-	lda	#$04
+	sta	rwts_dct+1
+
+	lda	#$04		; put retry count on stack
 	pha
-	stx	Z2b
+
+	stx	dos_slot_16
 	stx	D05f8
 	txa
-	ldy	#$0f
-	cmp	(Z48),Y
-	beq	Lc860
-	txa
+
+	ldy	#rwts_iopb_prev_slot_16	; slot matches prev slot?
+	cmp	(rwts_iopb),y
+	beq	Lc860		; yes, don't have to do anything special
+
+	txa			; turn off prev slot Disk II motor?
 	pha
-	lda	(Z48),Y
+	lda	(rwts_iopb),y
 	tax
 	pla
 	pha
-	sta	(Z48),Y
-	lda	Dc08e,X
+	sta	(rwts_iopb),y
+	lda	Dc08e,x
 Lc851:	ldy	#$08
-	lda	Dc08c,X
-Lc856:	cmp	Dc08c,X
+	lda	Dc08c,x
+Lc856:	cmp	Dc08c,x
 	bne	Lc851
 	dey
 	bne	Lc856
 	pla
 	tax
-Lc860:	lda	Dc089,X
+
+Lc860:	lda	led_on,x
 	jsr	click
-	ldy	#$08
-	lda	(Z48),Y
+
+	ldy	#rwts_iopb_buf_ptr	; copy buf ptr from RWTS IOPB to Z26
+	lda	(rwts_iopb),y
 	sta	Z26
 	iny
-	lda	(Z48),Y
-	sta	Z27
-	ldy	#$0e
-	lda	#$fe
-	sta	(Z48),Y
-	ldy	#$02
-	lda	(Z48),Y
-	ldy	#$10
-	sta	(Z48),Y
+	lda	(rwts_iopb),y
+	sta	Z26+1
+
+	ldy	#rwts_iopb_prev_volume	; set volume of last access to 254
+	lda	#254
+	sta	(rwts_iopb),y
+
+	ldy	#rwts_iopb_drive_num	; set drive number of last access
+	lda	(rwts_iopb),y
+	ldy	#rwts_iopb_prev_drive
+	sta	(rwts_iopb),y
+
 	ror
 	ror
 	sta	Z35
-	ldy	#$04
-	lda	(Z48),Y
-	sta	Z2a
-	sec
+
+	ldy	#rwts_iopb_track	; get logical track number from RWTS IOPB
+	lda	(rwts_iopb),y
+	sta	bubble_track		; save as bubble track number
+
+	sec			; if track > 3, subtract 3 from bubble track
 	sbc	#$03
 	bpl	Lc890
-	lda	Z2a
-Lc890:	sta	Z2a
-	tay
+	lda	bubble_track
+Lc890:	sta	bubble_track
+
+	tay			; bubble track >= 32?
 	sec
 	sbc	#$20
-	bpl	Lc908
+	bpl	rwts_finish
+
 	clc
 	lda	#$00
 	sta	Z2f
@@ -418,23 +468,30 @@ Lc890:	sta	Z2a
 	asl
 	rol	Z2f
 	sta	Z2e
-	ldy	#$05
-	lda	(Z48),Y
-	tay
-	lda	Dcac8,Y
-	ldy	Z2a
+
+	ldy	#rwts_iopb_sector	; get sector number from RWTS IOPB
+	lda	(rwts_iopb),y
+
+	tay			; deinterleave
+	lda	Dcac8,y
+
+	ldy	bubble_track
 	bne	Lc8b8
+
 	tay
-	lda	Dcae8,Y
+	lda	Dcae8,y
 	bpl	Lc8c7
+
 Lc8b8:	tay
-	lda	Dcad8,Y
-	ldy	Z2a
+	lda	Dcad8,y
+
+	ldy	bubble_track
 	cpy	#$0e
 	bne	Lc8c7
 	clc
 	adc	#$01
 	and	#$0f
+
 Lc8c7:	clc
 	adc	Z2e
 	asl
@@ -442,58 +499,82 @@ Lc8c7:	clc
 	asl
 	rol	Z2f
 	sta	Z2e
+
 	jsr	initchk
 	bcc	Lc8dc
-Lc8d7:	jsr	initial
-	bcs	Lc8fd
-Lc8dc:	ldy	#$0c
-	lda	(Z48),Y
-	beq	Lc908
+
+rwts_retry:
+	jsr	initial
+	bcs	rwts_check_status
+
+Lc8dc:	ldy	#rwts_iopb_command	; get IOPB command code
+	lda	(rwts_iopb),y
+	beq	rwts_finish		; cmd 0 = SEEK, handle as no-op
+
 	lsr
-	bcc	Lc8eb
+	bcc	Lc8eb			; cmd 2 or 4
+
+; cmd 1 = READ
 	jsr	rdbub
-	jmp	Lc8fd
+	jmp	rwts_check_status
 
 Lc8eb:	lsr
-	bcc	Lc908
+	bcc	rwts_finish		; cmd 4 = FORMAT, handle as no-op
+
+; cmd 2 = WRITE
 	jsr	wptest
-	bcc	Lc8f7
+	bcc	Lc8f7			; if write protected, error
 	lda	#$10
-	bne	Lc920
+	bne	rwts_done_err
+
 Lc8f7:	jsr	inbitmap
 	jsr	wrbub
-Lc8fd:	bcc	Lc908
-	pla
+
+rwts_check_status:
+	bcc	rwts_finish		; if no error, done
+
+	pla				; decrement retry count on stack
 	sec
 	sbc	#$01
 	pha
-	bne	Lc8d7
-	beq	Lc91a
-Lc908:	ldy	#$06
-	lda	(Z48),Y
-	sta	Z3c
+
+	bne	rwts_retry		; if retry count hasn't hit 0, retry
+
+	beq	rwts_drive_error	; otherwise report drive error
+
+rwts_finish:
+	ldy	#rwts_iopb_dct_ptr	; copy IOPB DCT ptr to Z3c
+	lda	(rwts_iopb),y		; (presumably for RWTS compatibility)
+	sta	rwts_dct
 	iny
-	lda	(Z48),Y
-	sta	Z3d
+	lda	(rwts_iopb),y
+	sta	rwts_dct+1
+
 	jsr	click
 	lda	#$00
-	beq	Lc91e
-Lc91a:	lda	#$40
-	bne	Lc920
-Lc91e:	clc
+	beq	rwts_done_ok
+
+rwts_drive_error:
+	lda	#$40	; drive error
+	bne	rwts_done_err
+
+rwts_done_ok:
+	clc
 	fcb	$24	; bit instr to skip sec
-Lc920:	sec
-	ldy	#$0d
-	sta	(Z48),Y
-	lda	Dc088,X
-	pla
+rwts_done_err:
+	sec
+	ldy	#rwts_iopb_return_code
+	sta	(rwts_iopb),y
+	lda	led_off,x
+
+	pla		; pop retry count from stack
 	rts
 
 
 ; check whether 7220 BMC needs initializing
 initchk:
 	lda	#bmc_cmd_reset_fifo
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	cmdwait
 	rts
 
@@ -502,13 +583,13 @@ initchk:
 cmdwait:
 	lda	#$00
 	pha
-Lc936:	lda	bmc_status,X
+Lc936:	lda	bmc_status,x
 	bmi	Lc940
 	dey
 	beq	Lc94f
 	bne	Lc936
 
-Lc940:	lda	bmc_status,X
+Lc940:	lda	bmc_status,x
 	bpl	Lc951
 	dey
 	bne	Lc940
@@ -532,26 +613,26 @@ Lc951:	clc
 ; on entry, Y = number of 64-byte pages for block length
 ldrdrac:
 	lda	#bmc_reg_block_length
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	ldx	#$00
 
 	tya
-	sta	(Z2c,X)		; write to block length LSB
+	sta	(Z2c,x)		; write to block length LSB
 
 	lda	#$10		; two FSA channels
-	sta	(Z2c,X)		; write to block length MSB
+	sta	(Z2c,x)		; write to block length MSB
 
 	lda	#$28		; enable RCD (read corrected data)
 				;   and MFBTR (max FSA-BMC transfer rate)
-	sta	(Z2c,X)		; write to enable register
+	sta	(Z2c,x)		; write to enable register
 
 	lda	Z2e
-	sta	(Z2c,X)		; write to address register LSB
+	sta	(Z2c,x)		; write to address register LSB
 
 	lda	Z2f
-	sta	(Z2c,X)		; write to address register MSB
+	sta	(Z2c,x)		; write to address register MSB
 
-	ldx	Z2b
+	ldx	dos_slot_16
 	rts
 
 
@@ -562,31 +643,31 @@ ldrdrac:
 ; on entry, Y = number of 64-byte pages for block length
 ldwrrac:
 	lda	#bmc_reg_block_length
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	ldx	#$00
 
 	tya
-	sta	(Z2c,X)		; write to block length LSB
+	sta	(Z2c,x)		; write to block length LSB
 
 	lda	#$10		; two FSA channels
-	sta	(Z2c,X)		; write to block length MSB
+	sta	(Z2c,x)		; write to block length MSB
 
 	lda	#$20		; enable RCD (read corrected data) only
-	sta	(Z2c,X)		; write to enable register
+	sta	(Z2c,x)		; write to enable register
 
 	lda	Z2e
-	sta	(Z2c,X)		; write to address register LSB
+	sta	(Z2c,x)		; write to address register LSB
 
 	lda	Z2f
-	sta	(Z2c,X)		; write to address register MSB
+	sta	(Z2c,x)		; write to address register MSB
 
-	ldx	Z2b
+	ldx	dos_slot_16
 	rts
 
 
 ; DOS: set Z2c to point to data reg
 dos_setup_data_reg_ptr:
-	lda	Z2b
+	lda	dos_slot_16
 	clc
 	adc	#$80
 	sta	Z2c
@@ -598,16 +679,16 @@ dos_setup_data_reg_ptr:
 ; initialize: tell BMC to abort, twice
 initial:
 	lda	#bmc_cmd_abort
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	cmdwait
 	bcs	Lc9dc
 
 	lda	#bmc_cmd_abort
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	cmdwait
 	bcs	Lc9dc
 
-	lda	bmc_status,X
+	lda	bmc_status,x
 	cmp	#$40
 	bne	Lc9dc
 
@@ -625,11 +706,11 @@ Lc9ba:	sbc	#$01
 	jsr	ldwrrac
 
 	lda	#bmc_cmd_initialize
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	cmdwait
 	bcs	Lc9dc
 
-	lda	bmc_status,X
+	lda	bmc_status,x
 	cmp	#$40
 	bne	Lc9dc
 	clc
@@ -640,7 +721,7 @@ Lc9dc:	sec
 
 Sc9de:	lda	#$ff
 	pha
-Lc9e1:	lda	bmc_status,X
+Lc9e1:	lda	bmc_status,x
 	bmi	Lc9ef
 	pla
 	sec
@@ -656,7 +737,7 @@ Lc9ef:	clc
 Sc9f2:	lda	#$ff
 	pha
 	pha
-Lc9f6:	lda	bmc_status,X
+Lc9f6:	lda	bmc_status,x
 	bpl	Lca13
 	lsr
 	bcs	Lca15
@@ -686,7 +767,7 @@ Lca15:	clc
 ; test write-protect switch
 ; returns carry set if write-protected, clear if not
 wptest:
-	lda	Dc08c,X
+	lda	Dc08c,x
 	bpl	Lca20
 	clc
 	fcb	$24	; bit instr to skip sec
@@ -702,7 +783,7 @@ rdbub:
 	ldy	#$00
 
 	lda	#bmc_cmd_read_data
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	Sc9de
 	bcs	Lca52
 
@@ -710,14 +791,14 @@ rdbub:
 Lca36:	jsr	Sc9f2
 	bcs	Lca47
 	ldx	#$00
-	lda	(Z2c,X)
-	ldx	Z2b
-	sta	(Z26),Y
+	lda	(Z2c,x)
+	ldx	dos_slot_16
+	sta	(Z26),y
 	iny
 	jmp	Lca36
 
 Lca47:	beq	Lca52
-	lda	bmc_status,X
+	lda	bmc_status,x
 	and	#$3c
 	bne	Lca52
 	clc
@@ -733,22 +814,22 @@ wrbub:	jsr	dos_setup_data_reg_ptr
 	ldy	#$00
 
 	lda	#bmc_cmd_write_data
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	Sc9de
 	bcs	Lca84
 
 ; write data loop
 Lca68:	jsr	Sc9f2
 	bcs	Lca79
-	lda	(Z26),Y
+	lda	(Z26),y
 	iny
 	ldx	#$00
-	sta	(Z2c,X)
-	ldx	Z2b
+	sta	(Z2c,x)
+	ldx	dos_slot_16
 	jmp	Lca68
 
 Lca79:	beq	Lca84
-	lda	bmc_status,X
+	lda	bmc_status,x
 	and	#$3c
 	bne	Lca84
 	clc
@@ -763,39 +844,43 @@ Lca84:	sec
 ; and tracks 3-5 (used for files) map to the same portion of the
 ; bubble device.
 inbitmap:
-	lda	Z2a
-	cmp	#$0e
-	bne	Lcabd
-	ldy	#$05
-	lda	(Z48),Y
+	lda	bubble_track	; is VTOC track (17, adjusted for bubble)?
+	cmp	#17-3
+	bne	inbitmap_done
+
+	ldy	#rwts_iopb_sector	; VTOC sector (0)?
+	lda	(rwts_iopb),y
 	cmp	#$00
-	bne	Lcabd
-	jsr	S03dc
+	bne	inbitmap_done
+
+	jsr	get_dos_fm_parm
 	sty	Z2c
 	sta	Z2c+1
 	ldy	#$00
-	lda	(Z2c),Y
+	lda	(Z2c),y
 	cmp	#$0b
-	bne	Lcabd
+	bne	inbitmap_done
 	lda	Z35
-	bpl	Lcabd
+	bpl	inbitmap_done
 	lda	#$fe
 	ldy	#$06
-	sta	(Z26),Y
+	sta	(Z26),y
 	lda	#$00
 	ldy	#$44
-Lcab1:	sta	(Z26),Y
+Lcab1:	sta	(Z26),y
 	iny
 	cpy	#$4c
 	bne	Lcab1
 	iny
 	lda	#$e0
-	sta	(Z26),Y
-Lcabd:	rts
+	sta	(Z26),y
+
+inbitmap_done:
+	rts
 
 
 ; toggle speaker if enabled by switch
-click:	lda	Dc08c,X
+click:	lda	Dc08c,x
 	asl
 	bpl	Lcac7
 	lda	spkr
@@ -833,7 +918,7 @@ Lcb16:	lda	D03a2
 	lda	#$09
 	jmp	Lcbc9
 
-Lcb21:	lda	Dc089,X
+Lcb21:	lda	led_on,x
 	lda	D03a4
 	tay
 	sec
@@ -926,9 +1011,10 @@ Lcbb4:	inc	Zcb
 	fcb	$24	; bit instr to skip sec
 Lcbc9:	sec
 	sta	D03ad
-	lda	Dc088,X
+	lda	led_off,x
 	pla
 	rts
+
 
 Lcbd2:	lda	#$04
 	pha
@@ -943,16 +1029,16 @@ Lcbd2:	lda	#$04
 	tya
 	pha
 	sta	D03e7
-	lda	Dc08e,X
+	lda	Dc08e,x
 Lcbec:	ldy	#$08
-	lda	Dc08c,X
-Lcbf1:	cmp	Dc08c,X
+	lda	Dc08c,x
+Lcbf1:	cmp	Dc08c,x
 	bne	Lcbec
 	dey
 	bne	Lcbf1
 	pla
 	tax
-Lcbfb:	lda	Dc089,X
+Lcbfb:	lda	led_on,x
 	jsr	click
 	stx	Z2b
 	lda	D03e4
@@ -985,14 +1071,14 @@ Lcc12:	lda	D03e8
 	sta	Z2e
 	lda	D03e1
 	tay
-	lda	Dcca9,Y
+	lda	Dcca9,y
 	ldy	D03e0
 	bne	Lcc4b
 	tay
-	lda	Dcae8,Y
+	lda	Dcae8,y
 	bpl	Lcc4f
 Lcc4b:	tay
-	lda	Dcad8,Y
+	lda	Dcad8,y
 Lcc4f:	clc
 	adc	Z2e
 	asl
@@ -1037,9 +1123,10 @@ Lcc9e:	clc
 	fcb	$24	; bit instr to skip sec
 Lcca0:	sec
 	sta	D03ea
-	lda	Dc088,X
+	lda	led_off,x
 	pla
 	rts
+
 
 ; interleave table?
 Dcca9:	fcb	$00,$02,$04,$06,$08,$0a,$0c,$0e
@@ -1094,11 +1181,11 @@ Sccf4:	lda	#$00
 	sta	Z3e
 	jsr	Scd5e
 	lda	prodos_unit
-	sta	Dfb59	; XXX why write to ROM?
+	sta	prodos_prev_unit
 	lda	#$04
 	pha
 	ldx	Z3e
-	lda	Dc089,X
+	lda	led_on,x
 	jsr	click
 	jsr	initchk
 	bcc	Lcd1b
@@ -1141,27 +1228,27 @@ Lcd45:	bcc	Lcd52
 	bne	Lcd16
 	lda	#$27
 	sta	Z3f
-Lcd52:	lda	Dc088,X
+Lcd52:	lda	led_off,x
 	jsr	click
 	ldx	#$00
 	ldy	#$01
 	pla
 	rts
 
-Scd5e:	eor	Dfb59
+Scd5e:	eor	prodos_prev_unit
 	and	#$7f
 	beq	Lcd84
-	lda	Dfb59
+	lda	prodos_prev_unit
 	and	#$0f
 	bne	Lcd84
-	lda	Dfb59
+	lda	prodos_prev_unit
 	and	#$70
 	tax
 	beq	Lcd84
-	lda	Dc08e,X
+	lda	Dc08e,x
 Lcd77:	ldy	#$08
-	lda	Dc08c,X
-Lcd7c:	cmp	Dc08c,X
+	lda	Dc08c,x
+Lcd7c:	cmp	Dc08c,x
 	bne	Lcd77
 	dey
 	bne	Lcd7c
@@ -1170,81 +1257,83 @@ Lcd84:	rts
 
 ; send block length and address to BMC for read data command
 ; (enables MFBTR, can't be used for commands other than read data)
-setup_prodos_read:	lda	#bmc_reg_block_length
-	sta	bmc_cmd,X
+setup_prodos_read:
+	lda	#bmc_reg_block_length
+	sta	bmc_cmd,x
 	ldx	#$00
 
-	lda	#$08		; 8*64 = 512 byte block
-	sta	(Z3c,X)		; write to block length LSB
+	lda	#$08			; 8*64 = 512 byte block
+	sta	(prodos_bmc_ptr,x)	; write to block length LSB
 
-	lda	#$10		; two FSA channels
-	sta	(Z3c,X)		; write to block length MSB
+	lda	#$10			; two FSA channels
+	sta	(prodos_bmc_ptr,x)	; write to block length MSB
 
-	lda	#$28		; enable RCD (read corrected data)
-				;   and MFBTR (max FSA-BMC transfer rate)
-	sta	(Z3c,X)		; write to enable register
+	lda	#$28			; enable RCD (read corrected data)
+					;   and MFBTR (max FSA-BMC transfer rate)
+	sta	(prodos_bmc_ptr,x)	; write to enable register
 
 	lda	prodos_block
-	sta	(Z3c,X)		; write to address register LSB
+	sta	(prodos_bmc_ptr,x)	; write to address register LSB
 
 	lda	prodos_block+1
-	sta	(Z3c,X)		; write to address register MSB
+	sta	(prodos_bmc_ptr,x)	; write to address register MSB
 
-	ldx	Z3e
+	ldx	prodos_slot_16
 	rts
 
 
 ; send block length and address to BMC for commands other than read data
 ; (disables MFBTR)
-setup_prodos_nonread:	lda	#bmc_reg_block_length
-	sta	bmc_cmd,X
+setup_prodos_nonread:
+	lda	#bmc_reg_block_length
+	sta	bmc_cmd,x
 	ldx	#$00
 
-	lda	#$08		; 8*64 = 512 byte block
-	sta	(Z3c,X)		; write to block length LSB
+	lda	#$08			; 8*64 = 512 byte block
+	sta	(prodos_bmc_ptr,x)	; write to block length LSB
 
-	lda	#$10		; two FSA channels
-	sta	(Z3c,X)		; write to block length MSB
+	lda	#$10			; two FSA channels
+	sta	(prodos_bmc_ptr,x)	; write to block length MSB
 
 	lda	#$20
-	sta	(Z3c,X)		; write to enable register
+	sta	(prodos_bmc_ptr,x)	; write to enable register
 
 	lda	prodos_block
-	sta	(Z3c,X)		; write to address register LSB
+	sta	(prodos_bmc_ptr,x)	; write to address register LSB
 
 	lda	prodos_block+1
-	sta	(Z3c,X)		; write to address register MSB
+	sta	(prodos_bmc_ptr,x)	; write to address register MSB
 
-	ldx	Z3e
+	ldx	prodos_slot_16
 	rts
 
 
-; set Z3c to point to data reg
+; set prodos_bmc_ptr to point to BMC data reg
 prodos_setup_data_reg_ptr:
-	lda	Z3e
+	lda	prodos_slot_16
 	clc
 	adc	#$80
-	sta	Z3c
+	sta	prodos_bmc_ptr
 	lda	#$c0
-	sta	Z3c+1
+	sta	prodos_bmc_ptr+1
 	rts
 
 
 Scdcd:	sei
 
 	lda	#bmc_cmd_abort
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	cmdwait
 	bcs	Lce11
 
 	lda	#bmc_cmd_abort
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	cmdwait
 
 	cli
 
 	bcs	Lce11
-	lda	bmc_status,X
+	lda	bmc_status,x
 	cmp	#$40
 	bne	Lce11
 	sec
@@ -1259,12 +1348,12 @@ Lcdef:	sbc	#$01
 	sei
 
 	lda	#bmc_cmd_initialize
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	cmdwait
 
 	cli
 	bcs	Lce11
-	lda	bmc_status,X
+	lda	bmc_status,x
 	cmp	#$40
 	bne	Lce11
 	clc
@@ -1279,7 +1368,7 @@ Sce13:	jsr	prodos_setup_data_reg_ptr
 	sei
 
 	lda	#bmc_cmd_read_data
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	Sc9de
 	bcs	Lce46
 
@@ -1287,16 +1376,16 @@ Sce13:	jsr	prodos_setup_data_reg_ptr
 Lce26:	jsr	Sc9f2
 	bcs	Lce3b
 	ldx	#$00
-	lda	(Z3c,X)
+	lda	(prodos_bmc_ptr,x)
 	ldx	Z3e
-	sta	(Z3a),Y
+	sta	(prodos_buf_ptr),y
 	iny
 	bne	Lce26
-	inc	Z3b
+	inc	prodos_buf_ptr+1
 	jmp	Lce26
 
 Lce3b:	beq	Lce46
-	lda	bmc_status,X
+	lda	bmc_status,x
 	and	#$3c
 	bne	Lce46
 	clc
@@ -1312,24 +1401,24 @@ Sce49:	jsr	prodos_setup_data_reg_ptr
 	sei
 
 	lda	#bmc_cmd_write_data
-	sta	bmc_cmd,X
+	sta	bmc_cmd,x
 	jsr	Sc9de
 	bcs	Lce7c
 
 ; write data loop
 Lce5c:	jsr	Sc9f2
 	bcs	Lce71
-	lda	(Z3a),Y
+	lda	(prodos_buf_ptr),y
 	iny
 	bne	Lce68
-	inc	Z3b
+	inc	prodos_buf_ptr+1
 Lce68:	ldx	#$00
-	sta	(Z3c,X)
-	ldx	Z3e
+	sta	(prodos_bmc_ptr,x)
+	ldx	prodos_slot_16
 	jmp	Lce5c
 
 Lce71:	beq	Lce7c
-	lda	bmc_status,X
+	lda	bmc_status,x
 	and	#$3c
 	bne	Lce7c
 	clc
@@ -1344,8 +1433,8 @@ Dce7f:	fcb	$01,$38,$b0,$03            	; ".8.."
 Sce83:	cmp	#$01
 	bne	Lce99
 	ldx	#$03
-Lce89:	lda	Dce7f,X
-	cmp	D0800,X
+Lce89:	lda	Dce7f,x
+	cmp	D0800,x
 	bne	Lce99
 	dex
 	bpl	Lce89
