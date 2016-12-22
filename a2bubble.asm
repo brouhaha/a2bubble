@@ -31,8 +31,7 @@ fcstrm	macro	s
 ; 00-01, 3a-46
 
 Z18	equ	$18
-Z26	equ	$26
-Z27	equ	$27
+boot_buf_ptr	equ	$26
 
 bubble_track	equ	$2a
 
@@ -46,20 +45,15 @@ Z35	equ	$35
 
 cswl	equ	$36	; monitor: character output vector (two bytes)
 
-Z38	equ	$38
-Z3a	equ	$3a
-Z3b	equ	$3b
-
-Z3c	equ	$3c	; ProDOS: pointer to BMC data register (two bytes)
-Z3d	equ	$3d
 
 Z3e	equ	$3e
 
 Z3f	equ	$3f
-Z41	equ	$41
 
 
 ; boot ROM variables
+boot_sector_num		equ	$3d
+boot_track_num		equ	$41
 boot_retry_count	equ	$47
 
 
@@ -215,7 +209,7 @@ bmc_cmd_reset_fifo	equ	$1d
 	ldx	$20	; $Cn01 = $20
 	ldy	#$00	; $Cn03 = $00
 	ldx	#$03	; $Cn05 = $03
-	stx	Z3c	; $Cn07 = $3C, bootable by original Autostart ROM,
+	stx	$3c	; $Cn07 = $3C, bootable by original Autostart ROM,
 			;              no SmartPort support
 
 ; get the slot number we're running in
@@ -233,11 +227,11 @@ bmc_cmd_reset_fifo	equ	$1d
 	tax
 	lda	led_on,x
 	lda	#$00
-	sta	Z26
-	sta	Z3d
-	sta	Z41
+	sta	boot_buf_ptr
+	sta	boot_sector_num
+	sta	boot_track_num
 	lda	#$08
-	sta	Z27
+	sta	boot_buf_ptr+1
 	clc
 	bcc	boot		; always taken
 
@@ -257,12 +251,12 @@ boot:	lda	c8xx_rom_disable
 	ldx	dos_slot_16
 	lda	#$00
 	sta	Z2f
-	lda	Z41
+	lda	boot_track_num
 	sec
 	sbc	#$03
 	bpl	Lc671
-	lda	Z41
-Lc671:	sta	Z41
+	lda	boot_track_num
+Lc671:	sta	boot_track_num
 	clc
 	asl
 	asl
@@ -270,14 +264,14 @@ Lc671:	sta	Z41
 	asl
 	rol	Z2f
 	sta	Z2e
-	ldy	Z41
+	ldy	boot_track_num
 	bne	Lc687
-	ldy	Z3d
+	ldy	boot_sector_num
 	lda	Dcae8,y
 	bpl	Lc697
-Lc687:	ldy	Z3d
+Lc687:	ldy	boot_sector_num
 	lda	Dcad8,y
-	ldy	Z41
+	ldy	boot_track_num
 	cpy	#$0e
 	bne	Lc697
 	clc
@@ -305,9 +299,9 @@ Lc6b3:	jsr	rdbub
 	bcs	Lc6cb
 
 	lda	spkr		; click speaker
-	inc	Z27
-	inc	Z3d
-	lda	Z3d
+	inc	boot_buf_ptr+1
+	inc	boot_sector_num
+	lda	boot_sector_num
 	jsr	Sce83
 	ldx	dos_slot_16
 	bcc	boot
@@ -423,12 +417,12 @@ Lc856:	cmp	Dc08c,x
 Lc860:	lda	led_on,x
 	jsr	click
 
-	ldy	#rwts_iopb_buf_ptr	; copy buf ptr from RWTS IOPB to Z26
+	ldy	#rwts_iopb_buf_ptr	; copy buf ptr from RWTS IOPB to boot_buf_ptr
 	lda	(rwts_iopb),y
-	sta	Z26
+	sta	boot_buf_ptr
 	iny
 	lda	(rwts_iopb),y
-	sta	Z26+1
+	sta	boot_buf_ptr+1
 
 	ldy	#rwts_iopb_prev_volume	; set volume of last access to 254
 	lda	#254
@@ -543,7 +537,7 @@ rwts_check_status:
 	beq	rwts_drive_error	; otherwise report drive error
 
 rwts_finish:
-	ldy	#rwts_iopb_dct_ptr	; copy IOPB DCT ptr to Z3c
+	ldy	#rwts_iopb_dct_ptr	; copy IOPB DCT ptr
 	lda	(rwts_iopb),y		; (presumably for RWTS compatibility)
 	sta	rwts_dct
 	iny
@@ -793,7 +787,7 @@ Lca36:	jsr	Sc9f2
 	ldx	#$00
 	lda	(Z2c,x)
 	ldx	dos_slot_16
-	sta	(Z26),y
+	sta	(boot_buf_ptr),y
 	iny
 	jmp	Lca36
 
@@ -821,7 +815,7 @@ wrbub:	jsr	dos_setup_data_reg_ptr
 ; write data loop
 Lca68:	jsr	Sc9f2
 	bcs	Lca79
-	lda	(Z26),y
+	lda	(boot_buf_ptr),y
 	iny
 	ldx	#$00
 	sta	(Z2c,x)
@@ -864,16 +858,16 @@ inbitmap:
 	bpl	inbitmap_done
 	lda	#$fe
 	ldy	#$06
-	sta	(Z26),y
+	sta	(boot_buf_ptr),y
 	lda	#$00
 	ldy	#$44
-Lcab1:	sta	(Z26),y
+Lcab1:	sta	(boot_buf_ptr),y
 	iny
 	cpy	#$4c
 	bne	Lcab1
 	iny
 	lda	#$e0
-	sta	(Z26),y
+	sta	(boot_buf_ptr),y
 
 inbitmap_done:
 	rts
@@ -968,10 +962,10 @@ Lcb6b:	ldy	Zbe
 	lda	#$02
 	bcs	Lcb7a
 Lcb77:	ldy	D03a8
-Lcb7a:	sty	Z26
-	sta	Z27
+Lcb7a:	sty	boot_buf_ptr
+	sta	boot_buf_ptr+1
 	sty	Z3e
-	sta	Z3f
+	sta	Z3e+1
 	jsr	initchk
 	bcc	Lcb8c
 Lcb87:	jsr	initial
@@ -1049,9 +1043,9 @@ Lcbfb:	lda	led_on,x
 	jmp	Lcca0
 
 Lcc12:	lda	D03e8
-	sta	Z26
+	sta	boot_buf_ptr
 	lda	D03e9
-	sta	Z27
+	sta	boot_buf_ptr+1
 	lda	D03e2
 	sta	D03e3
 	lda	D03e0
@@ -1158,9 +1152,9 @@ Lcccf:	asl	prodos_block
 	asl	prodos_block
 	rol	prodos_block+1
 	lda	prodos_buf
-	sta	Z3a
+	sta	prodos_buf_ptr
 	lda	prodos_buf+1
-	sta	Z3b
+	sta	prodos_buf_ptr+1
 	jsr	Sccf4
 Lcce6:	pla
 	sta	prodos_block+1
@@ -1178,7 +1172,7 @@ Sccf4:	lda	#$00
 	sta	Z3f
 	lda	prodos_unit
 	and	#$70
-	sta	Z3e
+	sta	prodos_slot_16
 	jsr	Scd5e
 	lda	prodos_unit
 	sta	prodos_prev_unit
@@ -1438,10 +1432,10 @@ Lce89:	lda	Dce7f,x
 	bne	Lce99
 	dex
 	bpl	Lce89
-	inc	Z3d
+	inc	boot_sector_num
 	clc
 	bcc	Lce9e
-Lce99:	lda	Z3d
+Lce99:	lda	boot_sector_num
 	cmp	D0800
 Lce9e:	rts
 
